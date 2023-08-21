@@ -1,6 +1,10 @@
 import Ship from "../modules/Ship";
 
-const ship = new Ship(3);
+let ship;
+
+beforeEach(() => {
+  ship = new Ship(3);
+});
 
 describe("hit()", () => {
   test("should increase the number of hits of the ship by one", () => {
@@ -16,7 +20,6 @@ describe("isSunk()", () => {
   });
 
   test("should return false when the number of hits doesn't equal to the legnth of the ship", () => {
-    ship.hits = 2;
     expect(ship.isSunk()).toBe(false);
   });
 });
