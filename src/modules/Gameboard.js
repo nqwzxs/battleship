@@ -38,16 +38,18 @@ export default class Gameboard {
     };
   }
 
-  static areOutOfBounds(shipLength, row, col, vertical) {
-    if (vertical) {
-      return row + shipLength > 9 || row < 0 || col > 9 || col < 0;
-    }
-
-    return col + shipLength > 9 || col < 0 || row > 9 || row < 0;
+  static #isShipOutOfBounds(shipLength, row, col, vertical) {
+    return vertical ? row + shipLength > 10 : col + shipLength > 10;
   }
 
-  static isSquareBusy(square) {
-    return square.busy;
+  static #areSquaresInvalid(squares) {
+    return squares.some((square) => square.busy);
+  }
+
+  removeShips() {
+    this.squares.forEach((square) => {
+      square.ship = null;
+    });
   }
 
   selectSquare(row, col) {
@@ -58,6 +60,10 @@ export default class Gameboard {
   }
 
   selectSquares(shipLength, row, col, vertical) {
+    if (Gameboard.#isShipOutOfBounds(shipLength, row, col, vertical)) {
+      return null;
+    }
+
     const selectedSquares = [];
 
     for (let i = 0; i < shipLength; i++) {
@@ -68,18 +74,37 @@ export default class Gameboard {
       selectedSquares.push(selectedSquare);
     }
 
+    if (Gameboard.#areSquaresInvalid(selectedSquares)) {
+      return null;
+    }
+
     return selectedSquares;
   }
 
-  static placeShip(ship, square) {
-    square.ship = ship;
+  #selectShipSquares(ship) {
+    const selectedSquares = [];
+
+    this.squares.forEach((square) => {
+      if (square.ship === ship) selectedSquares.push(square);
+    });
+
+    return selectedSquares;
   }
 
-  static setSquareBusy(square) {
-    square.busy = true;
+  placeShip(ship, squares) {
+    squares.forEach((square) => {
+      square.ship = ship;
+      square.busy = true;
+
+      const adjacentSquares = this.#selectAdjacentSquares(square);
+
+      adjacentSquares.forEach((adjSquare) => {
+        adjSquare.busy = true;
+      });
+    });
   }
 
-  selectAdjacentSquares(square) {
+  #selectAdjacentSquares(square) {
     const adjacentSquares = [];
 
     const offsets = [
@@ -97,8 +122,8 @@ export default class Gameboard {
       const [rowShift, colShift] = offset;
 
       const adjacentSquare = this.selectSquare(
-        square.row + rowShift,
-        square.col + colShift,
+        square.coordinates.row + rowShift,
+        square.coordinates.col + colShift,
       );
 
       if (adjacentSquare) adjacentSquares.push(adjacentSquare);
@@ -107,15 +132,59 @@ export default class Gameboard {
     return adjacentSquares;
   }
 
-  static receiveAttack(square) {
+  receiveAttack(square) {
+    if (square.shot) return;
+
     if (square.ship) {
       square.ship.hit();
+
+      if (square.ship.sunken) {
+        const shipSquares = this.#selectShipSquares(square.ship);
+
+        shipSquares.forEach((shipSquare) => {
+          const adjacentSquares = this.#selectAdjacentSquares(shipSquare);
+          adjacentSquares.forEach((adjSquare) => {
+            adjSquare.shot = true;
+          });
+        });
+      }
     }
 
     square.shot = true;
   }
 
   allSunk() {
-    Object.values(this.ships).every((ship) => ship.sunken === true);
+    return Object.values(this.ships).every((ship) => ship.sunken);
+  }
+
+  static getRandomCoordinate() {
+    return Math.floor(Math.random() * 10);
+  }
+
+  getRandomSquare() {
+    const row = Gameboard.getRandomCoordinate();
+    const col = Gameboard.getRandomCoordinate();
+
+    return this.selectSquare(row, col);
+  }
+
+  findValidCoordinates(ship) {
+    const row = Gameboard.getRandomCoordinate();
+    const col = Gameboard.getRandomCoordinate();
+    const vertical = Math.random() < 0.5;
+
+    const selectedSquares = this.selectSquares(ship.length, row, col, vertical);
+
+    if (selectedSquares) return selectedSquares;
+
+    return this.findValidCoordinates(ship);
+  }
+
+  placeShipsRandomly() {
+    Object.values(this.ships).forEach((ship) => {
+      const selectedSquares = this.findValidCoordinates(ship);
+
+      this.placeShip(ship, selectedSquares);
+    });
   }
 }
