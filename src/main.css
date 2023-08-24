@@ -1,0 +1,152 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap');
+
+:root {
+  font-size: 16px;
+  font-family: 'JetBrains Mono', monospace;
+
+  --background-color: #f5f5f4;
+  --border-color: #57534e;
+  --ship-color: #a8a29e;
+  --ship-shot-color: #ea580c;
+  --ship-sunk-color: #991b1b;
+  --shot-color: #0284c7;
+  --valid-place-color: #4ade80;
+  --invalid-place-color: #f87171;
+  --hover-color: rgba(168, 162, 158, 0.25);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--background-color);
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  align-items: center;
+}
+
+header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  font-size: 2rem;
+}
+
+button {
+  font-size: 1rem;
+  font-family: 'JetBrains Mono', monospace;;
+  padding: 1rem 2rem;
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+}
+
+button:hover {
+  background: var(--hover-color);
+}
+
+main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2.7rem
+}
+
+.gameboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  position: relative;
+}
+
+.gameboard {
+  width: 24rem;
+  height: 24rem;
+  display: grid;
+  grid-template: repeat(10, 1fr) / repeat(10, 1fr);
+  gap: 0.15rem;
+}
+
+.gameboard .square {
+  background: white;
+  border: var(--border-color) 1px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.computer-gameboard-container .gameboard.active
+.square:not(.has-ship-shot):not(.has-ship-sunk).square:not(.has-missed-shot):hover {
+  background: var(--hover-color);
+  transition: .1s;
+  cursor: crosshair;
+}
+
+.gameboard .invalid-place {
+  background: var(--invalid-place-color);
+  cursor: pointer;
+  transition: .1s;
+}
+
+.gameboard .valid-place {
+  background: var(--valid-place-color);
+  cursor: pointer;
+  transition: .1s;
+}
+
+.gameboard .has-ship {
+  background: var(--ship-color);
+}
+
+.gameboard .has-missed-shot {
+  background: var(--shot-color);
+}
+
+.gameboard .has-missed-shot::after {
+  content: '●';
+  padding-bottom: 4px;
+}
+
+.gameboard .has-ship-shot {
+  background: var(--ship-shot-color)
+}
+
+.gameboard .has-ship-shot::after,
+.gameboard .has-ship-sunk::after {
+  content: '✖';
+  font-size: 1.6rem;
+}
+
+.gameboard .has-ship-sunk {
+  background: var(--ship-sunk-color)
+}
+
+.gameboard:not(.active) {
+  opacity: 50%;
+}
+
+.modal {
+  background: var(--background-color);
+  width: 100%;
+  position: absolute;
+  padding: 2rem;
+  text-align: center;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
