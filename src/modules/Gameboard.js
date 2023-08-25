@@ -157,34 +157,67 @@ export default class Gameboard {
     return Object.values(this.ships).every((ship) => ship.sunken);
   }
 
-  static getRandomCoordinate() {
+  static #getRandomCoordinate() {
     return Math.floor(Math.random() * 10);
   }
 
   getRandomSquare() {
-    const row = Gameboard.getRandomCoordinate();
-    const col = Gameboard.getRandomCoordinate();
+    const row = Gameboard.#getRandomCoordinate();
+    const col = Gameboard.#getRandomCoordinate();
 
     return this.selectSquare(row, col);
   }
 
-  findValidCoordinates(ship) {
-    const row = Gameboard.getRandomCoordinate();
-    const col = Gameboard.getRandomCoordinate();
+  #findValidCoordinates(ship) {
+    const row = Gameboard.#getRandomCoordinate();
+    const col = Gameboard.#getRandomCoordinate();
     const vertical = Math.random() < 0.5;
 
     const selectedSquares = this.selectSquares(ship.length, row, col, vertical);
 
     if (selectedSquares) return selectedSquares;
 
-    return this.findValidCoordinates(ship);
+    return this.#findValidCoordinates(ship);
   }
 
   placeShipsRandomly() {
     Object.values(this.ships).forEach((ship) => {
-      const selectedSquares = this.findValidCoordinates(ship);
+      const selectedSquares = this.#findValidCoordinates(ship);
 
       this.placeShip(ship, selectedSquares);
     });
+  }
+
+  createDirections(square) {
+    const directions = {
+      right: [],
+      left: [],
+      down: [],
+      up: [],
+    };
+
+    const offsets = [
+      [0, 1],
+      [0, -1],
+      [1, 0],
+      [-1, 0],
+    ];
+
+    for (let i = 0; i < Object.keys(directions).length; i++) {
+      let { row, col } = square.coordinates;
+      let offsetSquare = null;
+
+      do {
+        row += offsets[i][0];
+        col += offsets[i][1];
+
+        offsetSquare = this.selectSquare(row, col);
+        if (offsetSquare) {
+          Object.values(directions)[i].push(offsetSquare);
+        }
+      } while (offsetSquare);
+    }
+
+    return directions;
   }
 }

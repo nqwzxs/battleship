@@ -193,3 +193,70 @@ describe("receiveAttack()", () => {
     });
   });
 });
+
+describe("removeShips()", () => {
+  test("should remove ships on all squares", () => {
+    const ship = new Ship(1);
+
+    Object.values(gameboard.squares).forEach((square) => {
+      square.ship = ship;
+    });
+
+    gameboard.removeShips();
+
+    Object.values(gameboard.squares).forEach((square) => {
+      expect(square.ship).toBe(null);
+    });
+  });
+});
+
+describe("getRandomSquare()", () => {
+  test("should return one of the squares", () => {
+    const randomSquare = gameboard.getRandomSquare();
+
+    const isSquare = Object.values(gameboard.squares).some(
+      (square) => randomSquare === square,
+    );
+
+    expect(isSquare).toBe(true);
+  });
+});
+
+describe("placeShipsRandomly()", () => {
+  test("should place all ships randomly", () => {
+    gameboard.placeShipsRandomly();
+
+    const areShipsPlaced = Object.values(gameboard.ships).every((ship) =>
+      Object.values(gameboard.squares).some((square) => square.ship === ship),
+    );
+
+    expect(areShipsPlaced).toBe(true);
+  });
+});
+
+describe("createDirections()", () => {
+  test("should return object of directions with squares", () => {
+    const square = gameboard.selectSquare(0, 0);
+
+    const directions = gameboard.createDirections(square);
+
+    const expectedDirections = {
+      right: gameboard.selectSquares(
+        9,
+        square.coordinates.row,
+        square.coordinates.col + 1,
+        false,
+      ),
+      left: [],
+      down: gameboard.selectSquares(
+        9,
+        square.coordinates.row + 1,
+        square.coordinates.col,
+        true,
+      ),
+      up: [],
+    };
+
+    expect(directions).toEqual(expectedDirections);
+  });
+});
