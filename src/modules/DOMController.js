@@ -1,3 +1,4 @@
+import ComputerLogic from "./ComputerLogic";
 import Game from "./Game";
 
 let game;
@@ -91,8 +92,9 @@ function updateGameboards() {
 function playTurns() {
   computerGameboardElement.classList.add("active");
 
-  let targetHumanSquare;
   let targetComputerSquare;
+
+  const computer = new ComputerLogic();
 
   function attackSquare(event) {
     if (!event.target.classList.contains("square")) return;
@@ -116,13 +118,10 @@ function playTurns() {
       humanGameboardElement.classList.remove("active");
 
       showVictoryModal();
+      return;
     }
 
-    do {
-      targetHumanSquare = game.players.human.gameboard.getRandomSquare();
-    } while (targetHumanSquare.shot && targetHumanSquare.ship);
-
-    game.players.human.gameboard.receiveAttack(targetHumanSquare);
+    computer.attack(game.players.human.gameboard);
     updateGameboards();
 
     if (game.players.human.gameboard.allSunk()) {
